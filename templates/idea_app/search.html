@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% block content %}
+
+  <form class="" action="" method="post">
+    {% csrf_token %}
+    <input type="text" name="title" value="">
+    <input type="text" name="something" value="">
+    <input type="submit" name="" value="Search">
+  </form>
+  {% if ideas  %}
+        {% for idea in ideas %}
+          <p>{{idea.date_added}}</p>
+        {% endfor %}
+  {% endif %}
+
+{% endblock content %}

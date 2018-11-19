@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% block content %}
+
+<div class="">
+
+
+  {% for idea in idea_list %}
+    <h1>{{idea.title}}</h1>
+    <h1>{{idea.date_added}}</h1>
+  {% endfor %}
+</div>
+{% endblock content %}
