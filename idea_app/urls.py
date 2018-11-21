@@ -5,6 +5,9 @@ app_name = 'thought_share'
 
 urlpatterns =[
     path('', views.index, name = 'index'),
-    path('ideas',views.IdeasList.as_view(), name = 'ideas'),
-    path('search',views.SearchIdeas.as_view(), name = 'search')
+    path('ideas/',views.IdeasList.as_view(), name = 'ideas'),
+    path('search/',views.SearchIdeas.as_view(), name = 'search'),
+    path('register/',views.RegisterForm.as_view(), name = 'register'),
+    path('login/',views.LoginForm.as_view(), name = 'login'),
+    path('logout/', views.user_logout, name = 'logout'),
 ]

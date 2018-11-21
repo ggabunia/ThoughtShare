@@ -5,5 +5,18 @@
 
 <h3>Test test test</h3>
 
+<a href="/register">register</a>
+<br>
+
+<br>
+
+<br>
+ {% if user.is_authenticated %}
+      {{user.first_name}} is authenticated
+      <br>
+      <a href="/logout">log out</a>
+  {% else %}
+      <a href="/login">log in</a>
+ {% endif %}
 
 {% endblock %}
