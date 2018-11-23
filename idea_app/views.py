@@ -46,7 +46,7 @@ class RegisterForm(TemplateView):
         if request.user.is_authenticated:
             return redirect('/')
         form = forms.UserForm()
-        return render(request, 'idea_app/register.html', context={'form': form})
+        return render(request, 'idea_app/authorization.html', context={'form': form})
     def post(self, request, **kwargs):
         if request.user.is_authenticated:
             return redirect('/')
@@ -55,35 +55,37 @@ class RegisterForm(TemplateView):
 
             data = form.cleaned_data
             try:
-                if duplicate_mail(data['email']):
-                    form.add_error(field = 'email', error = "Email already in user")
+                if duplicate_mail(data['form_email']):
+                    form.add_error(field = 'form_email', error = "Email already in use")
                 try:
-                    validate_password(data['password'])
+                    validate_password(data['form_password'])
                 except ValidationError as ve:
-                    form.add_error(field = 'password', error = ve.messages)
+                    form.add_error(field = 'form_password', error = ve.messages)
                 if len(form.errors) > 0:
-                    return render(request, 'idea_app/register.html', context={'form': form})
-                user = User.objects.create_user(username=data['username'],
-                                             email=data['email'],
-                                             password=data['password'],
-                                             first_name = data['first_name'],
-                                             last_name = data['last_name'])
+                    return render(request, 'idea_app/authorization.html', context={'form': form})
+                user = User.objects.create_user(username=data['form_username'],
+                                             email=data['form_email'],
+                                             password=data['form_password'],
+                                             first_name = data['form_first_name'],
+                                             last_name = data['form_last_name'])
 
             except IntegrityError as e:
 
                 if 'unique constraint' in str(e).lower():
-                    form.add_error(field = 'username', error="Username already in use")
+                    form.add_error(field = 'form_username', error="Username already in use")
+                    print("here")
                 else:
                     form.add_error(field = none, error = "Unspecified error, try again later")
-                return render(request, 'idea_app/register.html', context={'form': form})
+                return render(request, 'idea_app/authorization.html', context={'form': form})
             except Exception as e:
                 form.add_error(field = None, error = "Unspecified Integrity error, try again later" )
-                return render(request, 'idea_app/register.html', context={'form': form})
+                return render(request, 'idea_app/authorization.html', context={'form': form})
             try:
-                profile = models.UserProfile(user = user,  phone = data['phone'])
+                profile = models.UserProfile(user = user,  phone = data['form_phoneNumber'])
                 profile.save()
 
             except Exception as ex:
+                profile = None
                 print(ex)
 
 
@@ -92,33 +94,38 @@ class RegisterForm(TemplateView):
             if profile is None or profile.pk is None:
                 user.delete()
                 form.add_error(field = None, error = "Error registering, try again later." )
-                return render(request, 'idea_app/register.html', context={'form': form})
+                return render(request, 'idea_app/authorization.html', context={'form': form})
 
             login(request=request,user=user)
             return HttpResponseRedirect(reverse('thought_share:index'))
         else:
-            return render(request, 'idea_app/register.html', context={'form': form})
+            return render(request, 'idea_app/authorization.html', context={'form': form})
 
 
 
 class LoginForm(TemplateView):
     def get(self, request, **kwargs):
         if request.user.is_authenticated:
-            return redirect('/')
-        return render(request, 'idea_app/login.html')
+            return HttpResponseRedirect(reverse('thought_share:index'))
+        form = forms.UserForm()
+        return render(request, 'idea_app/authorization.html', context={'form':form})
     def post(self, request, **kwargs):
-        username = request.POST.get('username')
-        password = request.POST.get('password')
+        username = request.POST.get('form-username')
+        password = request.POST.get('form-password')
+        form = forms.UserForm()
         user = authenticate(username = username, password = password)
         if user:
+            print(user)
             if user.is_active:
                 login(request=request, user=user)
 
                 return HttpResponseRedirect(reverse('thought_share:index'))
             else:
-                return render(request, 'idea_app/login.html',  context = {'error': "User Not Active",})
+                print("not active")
+                return render(request, 'idea_app/authorization.html',  context = {'login_error': "User Not Active", 'form':form})
         else:
-            return render(request, 'idea_app/login.html',  context = {'error': "User Not Found",})
+            print("not found?")
+            return render(request, 'idea_app/authorization.html',  context = {'login_error': "User Not Found",'form':form})
 
 
 @login_required
