@@ -6,6 +6,8 @@ from django.contrib.auth.models import User
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name = 'profile')
     phone = models.CharField(max_length = 20,  blank = True)
+    def __str__(self):
+        return self.user.username
 
 
 class Category(models.Model):
@@ -27,5 +29,6 @@ class Idea(models.Model):
     i_likes = models.IntegerField(default=0)
     i_dislikes = models.IntegerField(default=0)
     # i_picture = models.ImageField(upload_to = 'idea_pictures',blank = True)
-    i_status = models.BooleanField(default=True)
+    i_date_sold = models.DateTimeField(blank = True, null = True)
+    i_is_active = models.BooleanField(default=True)
     i_auction = models.BooleanField(default=False)

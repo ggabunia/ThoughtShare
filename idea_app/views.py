@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse, HttpResponseRedirect
 from django.views.generic import TemplateView, ListView, DetailView,CreateView
 from django.contrib.auth import authenticate, login, logout, get_user_model
@@ -118,17 +118,61 @@ class LoginForm(TemplateView):
             print("not found?")
             return render(request, 'idea_app/authorization.html',  context = {'login_error': "User Not Found",'form':form})
 
-class IdeaForm(LoginRequiredMixin,TemplateView):
+class AddIdeaForm(LoginRequiredMixin,TemplateView):
     def get(self, request, **kwargs):
         form = forms.IdeaForm()
         return render(request, 'idea_app/add_idea.html',context={'form':form})
     def post(self,request, **kwargs):
         form = forms.IdeaForm(request.POST,request.FILES)
-        print(form.data)
         profile = models.UserProfile.objects.get(user=request.user)
         idea = form.save(commit=False)
         idea.i_creator = profile
         idea.save()
+        return HttpResponseRedirect(reverse('thought_share:my_ideas'))
+
+
+class EditIdeaForm(LoginRequiredMixin,TemplateView):
+    def get(self, request, **kwargs):
+        pk = kwargs['pk']
+        profile = None
+        try:
+            profile = get_object_or_404(models.UserProfile, user = request.user)
+        except:
+            HttpResponseRedirect(reverse('thought_share:index'))
+        if profile is None:
+            pass
+        try:
+            idea = models.Idea.objects.get(pk=pk)
+        except:
+            return HttpResponse("Idea Does Not exist")
+        if idea.i_creator != profile:
+            return HttpResponse("Not the creator")
+        if idea.i_date_sold is not None:
+            return HttpResponse("Idea already sold")
+        form = forms.IdeaForm(instance=idea)
+        return render(request, 'idea_app/edit_idea.html',context={'form':form, 'pk':pk})
+    def post(self,request, **kwargs):
+        try:
+            pkStr = request.POST.get('pk')
+            pk = int(pkStr)
+        except:
+            return HttpResponse("error getting pk")
+        try:
+            profile = get_object_or_404(models.UserProfile, user = request.user)
+        except:
+            HttpResponseRedirect(reverse('thought_share:index'))
+        if profile is None:
+            pass
+        try:
+            idea = models.Idea.objects.get(pk=pk)
+        except:
+            return HttpResponse("Idea Does Not exist")
+        if idea.i_creator != profile:
+            return HttpResponse("Not the creator")
+        if idea.i_date_sold is not None:
+            return HttpResponse("Idea already sold")
+        form = forms.IdeaForm(request.POST, instance=idea)
+        form.save()
         return HttpResponseRedirect(reverse('thought_share:my_ideas'))
 
 def my_ideas(request):
