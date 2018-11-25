@@ -43,16 +43,16 @@ class SearchIdeas(TemplateView):
 
 class RegisterForm(TemplateView):
     def get(self, request, **kwargs):
+        print(request.user.is_authenticated)
         if request.user.is_authenticated:
-            return redirect('/')
+            return HttpResponseRedirect(reverse('thought_share:index'))
         form = forms.UserForm()
         return render(request, 'idea_app/authorization.html', context={'form': form})
     def post(self, request, **kwargs):
         if request.user.is_authenticated:
-            return redirect('/')
+            return HttpResponseRedirect(reverse('thought_share:index'))
         form = forms.UserForm(request.POST)
         if form.is_valid():
-
             data = form.cleaned_data
             try:
                 if duplicate_mail(data['form_email']):
@@ -68,9 +68,7 @@ class RegisterForm(TemplateView):
                                              password=data['form_password'],
                                              first_name = data['form_first_name'],
                                              last_name = data['form_last_name'])
-
             except IntegrityError as e:
-
                 if 'unique constraint' in str(e).lower():
                     form.add_error(field = 'form_username', error="Username already in use")
                     print("here")
@@ -87,21 +85,14 @@ class RegisterForm(TemplateView):
             except Exception as ex:
                 profile = None
                 print(ex)
-
-
-
-
             if profile is None or profile.pk is None:
                 user.delete()
                 form.add_error(field = None, error = "Error registering, try again later." )
                 return render(request, 'idea_app/authorization.html', context={'form': form})
-
             login(request=request,user=user)
             return HttpResponseRedirect(reverse('thought_share:index'))
         else:
             return render(request, 'idea_app/authorization.html', context={'form': form})
-
-
 
 class LoginForm(TemplateView):
     def get(self, request, **kwargs):
@@ -126,6 +117,22 @@ class LoginForm(TemplateView):
         else:
             print("not found?")
             return render(request, 'idea_app/authorization.html',  context = {'login_error': "User Not Found",'form':form})
+
+class IdeaForm(LoginRequiredMixin,TemplateView):
+    def get(self, request, **kwargs):
+        form = forms.IdeaForm()
+        return render(request, 'idea_app/add_idea.html',context={'form':form})
+    def post(self,request, **kwargs):
+        form = forms.IdeaForm(request.POST,request.FILES)
+        print(form.data)
+        profile = models.UserProfile.objects.get(user=request.user)
+        idea = form.save(commit=False)
+        idea.i_creator = profile
+        idea.save()
+        return HttpResponseRedirect(reverse('thought_share:my_ideas'))
+
+def my_ideas(request):
+    return HttpResponse("my ideas page")
 
 
 @login_required

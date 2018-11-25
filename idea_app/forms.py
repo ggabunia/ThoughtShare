@@ -64,3 +64,9 @@ class UserForm(forms.Form):
             raise forms.ValidationError("Emails don't match")
         if clean_data['form_password']!=clean_data['form_password_repeat']:
             raise forms.ValidationError("Passwords don't match")
+
+
+class IdeaForm(forms.ModelForm):
+    class Meta:
+        model = models.Idea
+        fields = ['i_title','i_description','i_category','i_price',]

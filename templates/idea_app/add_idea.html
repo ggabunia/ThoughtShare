@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+  {% block content %}
+  <form class="" action="{% url 'thought_share:add_idea' %}" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{form.as_p}}
+    <input type="submit" name="" value="Add idea">
+  </form>
+
+  {% endblock %}

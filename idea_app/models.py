@@ -15,6 +15,17 @@ class Category(models.Model):
         return self.category_name
 
 class Idea(models.Model):
-    title = models.CharField(max_length = 264, unique = False)
-    category = models.ForeignKey('Category', on_delete=models.PROTECT)
-    date_added = models.DateTimeField(default = datetime.now)
+    def __str__(self):
+        return self.i_title
+    i_title = models.CharField(max_length = 264, unique = False)
+    i_description = models.TextField()
+    i_creator = models.ForeignKey('UserProfile', on_delete=models.PROTECT, related_name='seller')
+    i_buyer = models.ForeignKey('UserProfile', on_delete=models.SET_NULL, related_name='buyer', blank=True, null=True )
+    i_category = models.ForeignKey('Category', on_delete=models.PROTECT)
+    i_date_added = models.DateTimeField(auto_now_add = True)
+    i_price = models.DecimalField(max_digits=9, decimal_places=2)
+    i_likes = models.IntegerField(default=0)
+    i_dislikes = models.IntegerField(default=0)
+    # i_picture = models.ImageField(upload_to = 'idea_pictures',blank = True)
+    i_status = models.BooleanField(default=True)
+    i_auction = models.BooleanField(default=False)
