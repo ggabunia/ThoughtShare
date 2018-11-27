@@ -1,17 +1,16 @@
 {% extends "base.html" %}
 {% load staticfiles %}
   {% block content %}
-  <form class="" action="" method="post" enctype="multipart/form-data">
+  <form class="" action="{% url 'thought_share:add_idea' %}" method="post" enctype="multipart/form-data">
     {% if error %}
-    <div class="alert alert danger">
+    <div class="alert alert-danger">
       {{error}}
     </div>
     {% endif %}
-    <input type="hidden" name="pk" value="{{pk}}">
     {% csrf_token %}
     {{form.as_p}}
     {{ field.errors}}
-    <input type="submit" name="" value="Edit idea">
+    <input type="submit" name="" value="Add idea">
   </form>
 
   {% endblock %}

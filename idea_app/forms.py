@@ -69,4 +69,20 @@ class UserForm(forms.Form):
 class IdeaForm(forms.ModelForm):
     class Meta:
         model = models.Idea
-        fields = ['i_title','i_description','i_category','i_price',]
+        fields = ['i_title','i_description','i_category','i_price', 'i_auction_end',]
+        widgets = {
+            'i_title': forms.TextInput(attrs={'placeholder':'Idea Title', 'class':'form-control', 'required':'required',}),
+            'i_description': forms.Textarea(attrs={'placeholder':'Idea Description','class':'form-control','required':'required'}),
+            'i_category': forms.Select(attrs= {'id':'i_category','class':'form-control','required':'required'}),
+            'i_price': forms.NumberInput(attrs={'placeholder':'Idea Price', 'class':'form-control','required':'required', 'min':'1', 'step':'1',}),
+            # 'i_is_auction': forms.RadioSelect(attrs={'class':'form-control', 'onclick':'javascript:yesnoCheck();'}, choices=[(True, 'Yes'), (False, 'No')]),
+            'i_auction_end': forms.DateTimeInput(attrs={'class':'form-control', 'placeholder':'format: yyyy-MM-dd HH:mm'}),
+        }
+        labels = {
+            'i_title':'Idea Name',
+            'i_description':'Description',
+            'i_category':'Idea Category',
+            'i_price':'Price',
+            'i_is_auction':'Is it Auction?',
+            'i_auction_end':'End of Auction',
+        }

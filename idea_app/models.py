@@ -31,4 +31,5 @@ class Idea(models.Model):
     # i_picture = models.ImageField(upload_to = 'idea_pictures',blank = True)
     i_date_sold = models.DateTimeField(blank = True, null = True)
     i_is_active = models.BooleanField(default=True)
-    i_auction = models.BooleanField(default=False)
+    i_is_auction = models.BooleanField(default=False)
+    i_auction_end = models.DateTimeField(blank = True, null = True)

@@ -13,4 +13,5 @@ urlpatterns =[
     path('add-idea/',views.AddIdeaForm.as_view(), name = 'add_idea'),
     path('my-ideas/',views.my_ideas, name = 'my_ideas'),
     path('edit-idea/<int:pk>/',views.EditIdeaForm.as_view(), name='edit_idea'),
+    path('error/<str:msg>/', views.error, name='error'),
 ]
