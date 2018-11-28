@@ -1,13 +1,60 @@
 {% extends "base.html" %}
 {% load staticfiles %}
 {% block content %}
+<div class="container">
+  <h1 style="font-family:verdana">ThoughtShare Ideas List</h1>
+  <p style="font-family:verdana">Explore the list of ideas that are products of Creativity!</p><br>
+  <div style="font-family:verdana" class="tab">
+    {% for category in categories %}
+      {% if forloop.first %}
+          <button class="tablinks" onclick="openCity(event, 'category_{{category.pk}}')" id="defaultOpen">{{category.category_name}}</button>
+      {% else %}
+          <button class="tablinks" onclick="openCity(event, 'category_{{category.pk}}')">{{category.category_name}}</button>
+      {% endif %}
+    {% endfor %}
 
-<div class="">
+  </div>
+
+  {% for category in categories %}
+
+  <div id="category_{{category.pk}}" class="tabcontent">
+        <span onclick="this.parentElement.style.display='none'" class="topright">&times</span>
+        <h3>{{category.category_name}}</h3>
+
+        {% for idea in idea_list %}
+        {% if idea.i_category == category %}
+          <p>
+                <b>{{idea.i_title}}</b> <br> {{idea.i_description|truncatechars:200}} <a href="{% url 'thought_share:details' pk=idea.pk %}"> Read more..</a>
+          </p>
+          {% endif %}
+        {% endfor %}
 
 
-  {% for idea in idea_list %}
-    <h1>{{idea.title}}</h1>
-    <h1>{{idea.date_added}}</h1>
+
+
+
+    </div>
+
   {% endfor %}
+
+
+  <!-- <div class="row">
+    {% for category in categories %}
+    <div class="col-lg-4">
+      <h1>  {{category.category_name}}</h1>
+      <ul>
+        {% for idea in idea_list %}
+          <li>  {{idea.i_title|truncatechars:5}}</li>
+        {% endfor %}
+      </ul>
+
+
+    </div>
+
+    {% endfor %}
+  </div> -->
 </div>
-{% endblock content %}
+
+
+
+{% endblock %}

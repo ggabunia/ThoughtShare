@@ -12,7 +12,7 @@
 
 <br>
  {% if user.is_authenticated %}
-    <p class="alert alert-success"> {{user.first_name}} is authenticated</p> 
+    <p class="alert alert-success"> {{user.first_name}} is authenticated</p>
       <br>
       <a href="/logout">log out</a>
       <br>
@@ -20,5 +20,6 @@
   {% else %}
       <a href="/login">log in</a>
  {% endif %}
+ <a href="/ideas">ideas list</a>
 
 {% endblock %}

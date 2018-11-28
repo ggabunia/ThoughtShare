@@ -26,8 +26,14 @@ def index(request):
 
 class IdeasList(ListView):
     model = models.Idea
-    ordering = ['-date_added']
+    ordering = ['-i_date_added']
     template_name = 'idea_app/idea_list.html'
+    def get_context_data(self, **kwargs):
+
+        context = super(IdeasList, self).get_context_data(**kwargs)
+
+        context['categories'] = models.Category.objects.all().order_by('priority')
+        return context
 
 class SearchIdeas(TemplateView):
     def get(self,request, **kwargs):
@@ -144,7 +150,7 @@ class AddIdeaForm(LoginRequiredMixin,TemplateView):
             idea.save()
             return HttpResponseRedirect(reverse('thought_share:my_ideas'))
         else:
-            
+
             return render(request, 'idea_app/add_idea.html',context={'form':form})
 
 
@@ -194,6 +200,9 @@ class EditIdeaForm(LoginRequiredMixin,TemplateView):
         else:
             return render(request, 'idea_app/edit_idea.html',context={'form':form, 'pk':pk})
         return HttpResponseRedirect(reverse('thought_share:my_ideas'))
+
+def details(request,pk):
+    return HttpResponse("details page for "+str(pk))
 
 @login_required
 def my_ideas(request):
