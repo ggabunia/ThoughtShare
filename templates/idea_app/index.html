@@ -2,24 +2,27 @@
 {% load staticfiles %}
 {% block content %}
 
+<div class="container">
+  <h3>Test test test</h3>
 
-<h3>Test test test</h3>
+  <a href="/register">register</a>
+  <br>
 
-<a href="/register">register</a>
-<br>
+  <br>
 
-<br>
+  <br>
+   {% if user.is_authenticated %}
+      <p class="alert alert-success"> {{user.first_name}} is authenticated</p>
+        <br>
+        <a href="/logout">log out</a>
+        <br>
+        <a href="/add-idea">add idea</a>
+    {% else %}
+        <a href="/login">log in</a>
+   {% endif %}
+   <a href="/ideas">ideas list</a>
+</div>
 
-<br>
- {% if user.is_authenticated %}
-    <p class="alert alert-success"> {{user.first_name}} is authenticated</p>
-      <br>
-      <a href="/logout">log out</a>
-      <br>
-      <a href="/add-idea">add idea</a>
-  {% else %}
-      <a href="/login">log in</a>
- {% endif %}
- <a href="/ideas">ideas list</a>
+
 
 {% endblock %}

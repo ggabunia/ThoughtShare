@@ -16,7 +16,7 @@
     <link rel="stylesheet" href="{% static 'assets/css/form-elements.css' %}">
 
     <link rel="stylesheet" href="{% static 'assets/css/authStyle.css' %}">
-    <link rel="stylesheet" href="{% static 'assets/css/listStyle.css' %}"> 
+    <link rel="stylesheet" href="{% static 'assets/css/listStyle.css' %}">
     <link rel="stylesheet" href="{% static 'assets/css/style.css' %}">
     <!-- Favicon and touch icons -->
       <link rel="shortcut icon" href="{% static 'assets/ico/favicon.png' %}">
@@ -35,11 +35,13 @@
           </a>
         </div>
         <ul class="app-navigator__menu">
-          <li class="app-navigator__menu-item"><a href="/ideas">All Ideas</a></li>
+          <li class="app-navigator__menu-item"><a href="{% url 'thought_share:ideas' %}">All Ideas</a></li>
           {% if user.is_authenticated %}
-          <li class="app-navigator__menu-item"><a href="/add-idea">Add Idea</a></li>
+          <li class="app-navigator__menu-item"><a href="{% url 'thought_share:add_idea' %}">Add Idea</a></li>
+
+          <li class="app-navigator__menu-item"><a href="{% url 'thought_share:my_ideas' %}">My Ideas</a></li>
           {% endif %}
-          <li class="app-navigator__menu-item"><a href="/contact">Contact</a></li>
+
           <div class="app-navigator__divider-vertical" style="height: 1.6em;"></div>
           <!-- User identity here -->
           {% if user.is_authenticated %}
@@ -59,9 +61,9 @@
         <div class="container">
           <div class="row">
 
-            <div class="col-sm-8 col-sm-offset-2">
+            <div class="col-lg-4 col-lg-offset-4 col-md-6 col-md-offset-3 col-sm-8 col-sm-offset-2">
               <div class="footer-border"></div>
-              <p>Copyright © 2018 ThoughtShare <i class="fa fa-smile-o"></i></p>
+              <p  class="text-center">Copyright © 2018 ThoughtShare <i class="fa fa-smile-o"></i></p>
             </div>
 
           </div>
