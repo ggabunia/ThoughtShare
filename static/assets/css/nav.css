@@ -1,0 +1,79 @@
+.app-navigator {
+    position: relative;
+    width: 100%;
+    height: 80px;
+    background: #ffffff;
+    box-shadow: 0 2px 8px #f0f1f2;
+}
+
+.app-navigator__logo-wrapper {
+    display: inline-block;
+    position: relative;
+    height: 100%;
+}
+
+.app-navigator__logo-img {
+    display: inline-block;
+    position: relative;
+    height: 50px;
+    margin: 15px 45px;
+}
+
+.app-navigator__menu {
+    display: inline-block;
+    position: relative;
+    float: right;
+    margin: 0 60px 0 0;
+    height: 80px;
+    line-height: 80px;
+}
+
+.app-navigator__menu-item {
+    display: inline-block;
+    position: relative;
+    margin: 0;
+    min-width: 100px;
+    height: 80px;
+    line-height: 80px;
+    font-size: 1.10em;
+    text-align: center;
+    cursor: pointer;
+    color: #314659;
+    font-family: Avenir, "Chinese Quote", -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+    transition: border .2s ease-in;
+    border-top: 2px solid rgba(24,144,255, 0);
+}
+
+.app-navigator__menu-item:hover, .app-navigator__menu-item:focus {
+    border-top: 2px solid #1890ff;
+}
+
+.app-navigator__menu-item a {
+    color: #314659;
+    display: inline-block;
+    position: relative;
+    width: 100%;
+    height: 100%;
+    text-decoration: none;
+    transition: color .2s ease-in;
+}
+
+.app-navigator__menu-item a:hover, .app-navigator__menu-item a:focus {
+    color: #1890ff;
+}
+
+.app-navigator__divider-vertical {
+    margin: 0 8px;
+    display: inline-block;
+    height: .9em;
+    width: 1px;
+    vertical-align: middle;
+    position: relative;
+    top: -0.06em;
+    line-height: 1.5;
+    color: rgba(0,0,0,0.65);
+    box-sizing: border-box;
+    padding: 0;
+    list-style: none;
+    background: #e8e8e8;
+}
