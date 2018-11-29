@@ -26,8 +26,14 @@ def index(request):
 
 class IdeasList(ListView):
     model = models.Idea
-    ordering = ['-date_added']
+    ordering = ['-i_date_added']
     template_name = 'idea_app/idea_list.html'
+    def get_context_data(self, **kwargs):
+
+        context = super(IdeasList, self).get_context_data(**kwargs)
+
+        context['categories'] = models.Category.objects.all().order_by('priority')
+        return context
 
 class SearchIdeas(TemplateView):
     def get(self,request, **kwargs):
@@ -43,7 +49,7 @@ class SearchIdeas(TemplateView):
 
 class RegisterForm(TemplateView):
     def get(self, request, **kwargs):
-        print(request.user.is_authenticated)
+
         if request.user.is_authenticated:
             return HttpResponseRedirect(reverse('thought_share:index'))
         form = forms.UserForm()
@@ -71,7 +77,7 @@ class RegisterForm(TemplateView):
             except IntegrityError as e:
                 if 'unique constraint' in str(e).lower():
                     form.add_error(field = 'form_username', error="Username already in use")
-                    print("here")
+
                 else:
                     form.add_error(field = none, error = "Unspecified error, try again later")
                 return render(request, 'idea_app/authorization.html', context={'form': form})
@@ -84,7 +90,7 @@ class RegisterForm(TemplateView):
 
             except Exception as ex:
                 profile = None
-                print(ex)
+
             if profile is None or profile.pk is None:
                 user.delete()
                 form.add_error(field = None, error = "Error registering, try again later." )
@@ -106,16 +112,16 @@ class LoginForm(TemplateView):
         form = forms.UserForm()
         user = authenticate(username = username, password = password)
         if user:
-            print(user)
+
             if user.is_active:
                 login(request=request, user=user)
 
                 return HttpResponseRedirect(reverse('thought_share:index'))
             else:
-                print("not active")
+
                 return render(request, 'idea_app/authorization.html',  context = {'login_error': "User Not Active", 'form':form})
         else:
-            print("not found?")
+
             return render(request, 'idea_app/authorization.html',  context = {'login_error': "User Not Found",'form':form})
 
 class AddIdeaForm(LoginRequiredMixin,TemplateView):
@@ -123,12 +129,29 @@ class AddIdeaForm(LoginRequiredMixin,TemplateView):
         form = forms.IdeaForm()
         return render(request, 'idea_app/add_idea.html',context={'form':form})
     def post(self,request, **kwargs):
-        form = forms.IdeaForm(request.POST,request.FILES)
-        profile = models.UserProfile.objects.get(user=request.user)
-        idea = form.save(commit=False)
-        idea.i_creator = profile
-        idea.save()
-        return HttpResponseRedirect(reverse('thought_share:my_ideas'))
+        i_is_auction = False
+        try:
+            is_auction_str = request.POST.get('i_is_auction')
+            i_is_auction = bool(is_auction_str)
+        except:
+            i_is_auction = False
+        form = forms.IdeaForm(request.POST)
+        try:
+            profile = models.UserProfile.objects.get(user=request.user)
+        except:
+            return render(request, 'idea_app/add_idea.html',context={'form':form, 'error':'You must be a regular user to add ideas, not admin/moderator'})
+        if profile is None:
+            return render(request, 'idea_app/add_idea.html',context={'form':form, 'error':'You must be a regular user to add ideas, not admin/moderator'})
+
+        if form.is_valid():
+            idea = form.save(commit=False)
+            idea.i_creator = profile
+            idea.i_is_auction = i_is_auction
+            idea.save()
+            return HttpResponseRedirect(reverse('thought_share:my_ideas'))
+        else:
+
+            return render(request, 'idea_app/add_idea.html',context={'form':form})
 
 
 class EditIdeaForm(LoginRequiredMixin,TemplateView):
@@ -138,17 +161,17 @@ class EditIdeaForm(LoginRequiredMixin,TemplateView):
         try:
             profile = get_object_or_404(models.UserProfile, user = request.user)
         except:
-            HttpResponseRedirect(reverse('thought_share:index'))
+            return HttpResponseRedirect(reverse('thought_share:error',kwargs={'msg': 'You must be a regular user to add ideas, not admin or moderator'}))
         if profile is None:
-            pass
+            return HttpResponseRedirect(reverse('thought_share:error',kwargs={'msg': 'You must be a regular user to add ideas, not admin or moderator'}))
         try:
             idea = models.Idea.objects.get(pk=pk)
         except:
-            return HttpResponse("Idea Does Not exist")
+            return HttpResponseRedirect(reverse('thought_share:error',kwargs={'msg': 'Idea ot found'}))
         if idea.i_creator != profile:
-            return HttpResponse("Not the creator")
-        if idea.i_date_sold is not None:
-            return HttpResponse("Idea already sold")
+            return HttpResponseRedirect(reverse('thought_share:error',kwargs={'msg': 'You are not the author of this idea'}))
+        if idea.i_date_sold is not None or idea.i_buyer is not None:
+            return HttpResponseRedirect(reverse('thought_share:error',kwargs={'msg': 'Idea already sold, unable to edit'}))
         form = forms.IdeaForm(instance=idea)
         return render(request, 'idea_app/edit_idea.html',context={'form':form, 'pk':pk})
     def post(self,request, **kwargs):
@@ -156,28 +179,37 @@ class EditIdeaForm(LoginRequiredMixin,TemplateView):
             pkStr = request.POST.get('pk')
             pk = int(pkStr)
         except:
-            return HttpResponse("error getting pk")
+            return render(request, 'idea_app/edit_idea.html',context={'form':form, 'error':'Could not retrieve the idea to update'})
         try:
             profile = get_object_or_404(models.UserProfile, user = request.user)
         except:
-            HttpResponseRedirect(reverse('thought_share:index'))
+            return render(request, 'idea_app/edit_idea.html',context={'form':form, 'error':'You must be a regular user to add ideas, not admin/moderator'})
         if profile is None:
-            pass
+            return render(request, 'idea_app/edit_idea.html',context={'form':form, 'error':'You must be a regular user to add ideas, not admin/moderator'})
         try:
             idea = models.Idea.objects.get(pk=pk)
         except:
-            return HttpResponse("Idea Does Not exist")
+            return render(request, 'idea_app/edit_idea.html',context={'form':form, 'error':'Could not retrieve the idea to update. Try again'})
         if idea.i_creator != profile:
-            return HttpResponse("Not the creator")
+            return render(request, 'idea_app/edit_idea.html',context={'form':form, 'error':'You are not the author of the idea you are trying to update'})
         if idea.i_date_sold is not None:
-            return HttpResponse("Idea already sold")
+            return render(request, 'idea_app/edit_idea.html',context={'form':form, 'error':'Idea already sold, unable to edit'})
         form = forms.IdeaForm(request.POST, instance=idea)
-        form.save()
+        if form.is_valid():
+            form.save()
+        else:
+            return render(request, 'idea_app/edit_idea.html',context={'form':form, 'pk':pk})
         return HttpResponseRedirect(reverse('thought_share:my_ideas'))
 
+def details(request,pk):
+    return HttpResponse("details page for "+str(pk))
+
+@login_required
 def my_ideas(request):
     return HttpResponse("my ideas page")
 
+def error(request, msg):
+    return render(request, 'idea_app/error.html', context={'error':msg})
 
 @login_required
 def user_logout(request):
