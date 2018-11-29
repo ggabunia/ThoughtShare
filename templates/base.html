@@ -14,8 +14,10 @@
 
     <link rel="stylesheet" href="{% static 'assets/font-awesome/css/font-awesome.min.css' %}">
     <link rel="stylesheet" href="{% static 'assets/css/form-elements.css' %}">
+
+    <link rel="stylesheet" href="{% static 'assets/css/authStyle.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/css/listStyle.css' %}"> 
     <link rel="stylesheet" href="{% static 'assets/css/style.css' %}">
-    <link rel="stylesheet" href="{% static 'assets/css/listStyle.css' %}">
     <!-- Favicon and touch icons -->
       <link rel="shortcut icon" href="{% static 'assets/ico/favicon.png' %}">
       <link rel="apple-touch-icon-precomposed" sizes="144x144" href="{% static 'assets/ico/apple-touch-icon-144-precomposed.png' %}">
@@ -25,6 +27,30 @@
 
   </head>
   <body>
+
+    <nav class="app-navigator">
+        <div class="app-navigator__logo-wrapper">
+          <a href="/">
+            <img class="app-navigator__logo-img" src="{% static 'assets/img/logo.png' %}">
+          </a>
+        </div>
+        <ul class="app-navigator__menu">
+          <li class="app-navigator__menu-item"><a href="/ideas">All Ideas</a></li>
+          {% if user.is_authenticated %}
+          <li class="app-navigator__menu-item"><a href="/add-idea">Add Idea</a></li>
+          {% endif %}
+          <li class="app-navigator__menu-item"><a href="/contact">Contact</a></li>
+          <div class="app-navigator__divider-vertical" style="height: 1.6em;"></div>
+          <!-- User identity here -->
+          {% if user.is_authenticated %}
+            <li class="app-navigator__menu-item"><a href="/logout">Logout</a></li>
+          {% else %}
+          <li class="app-navigator__menu-item"><a href="/login">Login</a></li>
+          <li class="app-navigator__menu-item"><a href="/register">Register</a></li>
+          {% endif %}
+        </ul>
+        </nav>
+
 
             {% block content %}
             {% endblock %}
@@ -46,7 +72,7 @@
       <script src='http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js'></script>
    <script src='http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js'></script>
       <script src='http://cdnjs.cloudflare.com/ajax/libs/bootstrap-validator/0.4.5/js/bootstrapvalidator.min.js'></script>
-      <script src="{% static 'assets/js/scripts.js' %}"></script>
+      <script src="{% static 'assets/js/authScripts.js' %}"></script>
       <script src="{% static 'assets/js/SubmitScript.js' %}"></script>
       <script src="{% static 'assets/js/listScript.js' %}"></script>
   </body>
