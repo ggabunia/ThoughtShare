@@ -28,7 +28,7 @@ class Idea(models.Model):
     i_price = models.DecimalField(max_digits=9, decimal_places=2)
     i_likes = models.IntegerField(default=0)
     i_dislikes = models.IntegerField(default=0)
-    # i_picture = models.ImageField(upload_to = 'idea_pictures',blank = True)
+    i_file = models.FileField(upload_to = 'idea_files',blank = True)
     i_date_sold = models.DateTimeField(blank = True, null = True)
     i_is_active = models.BooleanField(default=True)
     i_is_auction = models.BooleanField(default=False)

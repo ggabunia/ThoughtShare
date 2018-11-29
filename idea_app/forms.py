@@ -69,7 +69,7 @@ class UserForm(forms.Form):
 class IdeaForm(forms.ModelForm):
     class Meta:
         model = models.Idea
-        fields = ['i_title','i_description','i_category','i_price', 'i_auction_end',]
+        fields = ['i_title','i_description','i_category','i_price', 'i_auction_end', 'i_file']
         widgets = {
             'i_title': forms.TextInput(attrs={'placeholder':'Idea Title', 'class':'form-control', 'required':'required',}),
             'i_description': forms.Textarea(attrs={'placeholder':'Idea Description','class':'form-control','required':'required'}),
@@ -77,6 +77,7 @@ class IdeaForm(forms.ModelForm):
             'i_price': forms.NumberInput(attrs={'placeholder':'Idea Price', 'class':'form-control','required':'required', 'min':'1', 'step':'1',}),
             # 'i_is_auction': forms.RadioSelect(attrs={'class':'form-control', 'onclick':'javascript:yesnoCheck();'}, choices=[(True, 'Yes'), (False, 'No')]),
             'i_auction_end': forms.DateTimeInput(attrs={'class':'form-control', 'placeholder':'format: yyyy-MM-dd HH:mm'}),
+            'i_file': forms.FileInput(attrs={'class': 'form-control', 'required':'required'}),
         }
         labels = {
             'i_title':'Idea Name',
@@ -85,4 +86,5 @@ class IdeaForm(forms.ModelForm):
             'i_price':'Price',
             'i_is_auction':'Is it Auction?',
             'i_auction_end':'End of Auction',
+            'i_file': 'Details File',
         }

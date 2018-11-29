@@ -135,7 +135,7 @@ class AddIdeaForm(LoginRequiredMixin,TemplateView):
             i_is_auction = bool(is_auction_str)
         except:
             i_is_auction = False
-        form = forms.IdeaForm(request.POST)
+        form = forms.IdeaForm(request.POST, request.FILES)
         try:
             profile = models.UserProfile.objects.get(user=request.user)
         except:
