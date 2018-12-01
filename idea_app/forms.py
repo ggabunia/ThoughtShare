@@ -69,14 +69,14 @@ class UserForm(forms.Form):
 class IdeaForm(forms.ModelForm):
     class Meta:
         model = models.Idea
-        fields = ['i_title','i_description','i_category','i_price', 'i_auction_end', 'i_file']
+        fields = ['title','description','category','price', 'auction_end', 'file']
         widgets = {
-            'i_title': forms.TextInput(attrs={'placeholder':'Idea Title', 'class':'form-control', 'required':'required',}),
-            'i_description': forms.Textarea(attrs={'placeholder':'Idea Description','class':'form-control','required':'required'}),
-            'i_category': forms.Select(attrs= {'id':'i_category','class':'form-control','required':'required'}),
-            'i_price': forms.NumberInput(attrs={'placeholder':'Idea Price', 'class':'form-control','required':'required', 'min':'1', 'step':'1',}),
+            'title': forms.TextInput(attrs={'placeholder':'Idea Title', 'class':'form-control', 'required':'required',}),
+            'description': forms.Textarea(attrs={'placeholder':'Idea Description','class':'form-control','required':'required'}),
+            'category': forms.Select(attrs= {'id':'i_category','class':'form-control','required':'required'}),
+            'price': forms.NumberInput(attrs={'placeholder':'Idea Price', 'class':'form-control','required':'required', 'min':'1', 'step':'1',}),
             # 'i_is_auction': forms.RadioSelect(attrs={'class':'form-control', 'onclick':'javascript:yesnoCheck();'}, choices=[(True, 'Yes'), (False, 'No')]),
-            'i_auction_end': forms.DateTimeInput(attrs={'class':'form-control', 'placeholder':'format: yyyy-MM-dd HH:mm'}),
+            'auction_end': forms.DateTimeInput(attrs={'class':'form-control', 'placeholder':'format: yyyy-MM-dd HH:mm'}),
             'i_file': forms.FileInput(attrs={'class': 'form-control', 'required':'required'}),
         }
         labels = {

@@ -10,6 +10,13 @@ from django.shortcuts import redirect
 from django.core.exceptions import ValidationError
 from django.contrib.auth.password_validation import validate_password
 from django.db import IntegrityError
+from django.http import Http404
+from rest_framework import mixins, generics, permissions, viewsets
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework.reverse import reverse
+from rest_framework import status
+
 from . import models
 from . import forms
 # Create your views here.
@@ -220,3 +227,5 @@ def user_logout(request):
         except:
             continue
     return HttpResponseRedirect(reverse('thought_share:index'))
+
+###API versions from here on
