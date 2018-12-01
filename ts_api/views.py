@@ -14,6 +14,8 @@ from idea_app import models
 @api_view(['GET'])
 def api_root(request, format=None):
     return Response({
+        "login": request.build_absolute_uri()+"rest-auth/login",
+        "logout": request.build_absolute_uri()+"rest-auth/logout",
         "all ideas": reverse('ts_api:all_ideas', request=request, format=format),
         "user's ideas": reverse('ts_api:user_ideas', request=request, format=format),
         "all users" : reverse('ts_api:user_list', request=request, format=format),
