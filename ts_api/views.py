@@ -168,9 +168,9 @@ class UpdateIdea(generics.RetrieveUpdateAPIView):
 
 
 class UserList(generics.ListAPIView):
-    serializer_class = serializers.UserProfileSerializer
-    queryset = models.UserProfile.objects.all()
-    permission_classes = (permissions.IsAdminUser,)
+    serializer_class = serializers.UserSerializer
+    queryset = User.objects.all()
+    permission_classes = (permissions.IsAuthenticated,)
 
 
 class CategoryList(generics.ListAPIView):
