@@ -1,13 +1,15 @@
-from django.shortcuts import render
-from django.http import Http404
+from django.shortcuts import render, get_object_or_404
+from django.http import Http404, JsonResponse
 from rest_framework import mixins, generics, permissions, viewsets
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
+from rest_framework.parsers import JSONParser
 from rest_framework import status
 from django.contrib.auth.models import User
 from . import serializers
 from idea_app import models
+import json
 # Create your views here.
 
 
@@ -16,20 +18,104 @@ def api_root(request, format=None):
     return Response({
         "login": request.build_absolute_uri()+"rest-auth/login",
         "logout": request.build_absolute_uri()+"rest-auth/logout",
-        "all ideas": reverse('ts_api:all_ideas', request=request, format=format),
-        "user's ideas": reverse('ts_api:user_ideas', request=request, format=format),
-        "all users" : reverse('ts_api:user_list', request=request, format=format),
-        "get single user" : reverse('ts_api:get_user', request=request, format=format),
         "register user" : reverse('ts_api:register', request=request, format=format),
-        "add idea": reverse('ts_api:add_idea', request=request, format=format),
+        "get current user" :reverse('ts_api:get_current_user', request=request, format=format),
+
+        "get single user (admin only)" : reverse('ts_api:get_user', request=request, format=format),
+        "all users (admin only)" : reverse('ts_api:user_list', request=request, format=format),
+
+        "all ideas": reverse('ts_api:all_ideas', request=request, format=format),
+        "get idea": reverse('ts_api:get_idea', request=request, format=format),
+        "my ideas": reverse('ts_api:my_ideas', request=request, format=format),
+        "user ideas": reverse('ts_api:user_ideas', request=request, format=format),
+        "add idea (by authorized user)": reverse('ts_api:add_idea', request=request, format=format),
+        "edit idea (of the authorized user)": reverse('ts_api:edit_idea', request=request, format=format),
+
+
         "get all categories": reverse('ts_api:all_categories', request=request, format=format),
         "get category": reverse('ts_api:get_category', request=request, format=format),
-        "edit idea": reverse('ts_api:edit_idea', request=request, format=format),
-        "authorize": request.build_absolute_uri()+"rest-auth/login",
+
+        "add rating (by authorize user, only if not yet rated)": reverse('ts_api:add_rating', request=request, format=format),
+        "get current user's rating for an idea": reverse('ts_api:get_user_rating', request=request, format=format),
+        "remove current rating for an idea": reverse('ts_api:remove_rating', request=request, format=format),
+
     })
 
 
+class AddRating(generics.CreateAPIView):
+    queryset = models.IdeaRating.objects.all()
+    serializer_class = serializers.RatingSerializer
+    permission_classes = (permissions.IsAuthenticated,)
 
+@api_view(['GET'])
+@permission_classes((permissions.IsAuthenticated, ))
+def get_user_rating(request, idea_id):
+    user = request.user
+    if user is None:
+        return JsonResponse({'error':'User not Found'}, status=status.HTTP_404_NOT_FOUND)
+    profile = models.UserProfile.objects.get(user=user)
+    if profile is None:
+        return JsonResponse({'error':'User not Found'}, status=status.HTTP_404_NOT_FOUND)
+    try:
+        rating = models.IdeaRating.objects.get(user = profile, idea_id = idea_id)
+    except:
+        return JsonResponse({'error':'User has not rated this Idea'}, status=status.HTTP_404_NOT_FOUND)
+
+    rating = serializers.RatingSerializer(rating)
+    return Response(rating.data)
+
+@api_view(['GET','DELETE'])
+@permission_classes((permissions.IsAuthenticated, ))
+def delete_rating(request,idea_id):
+    try:
+        rating = models.IdeaRating.objects.get(idea_id = idea_id)
+    except:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'GET':
+        serializer = serializers.RatingSerializer(rating)
+        return Response(serializer.data)
+
+    elif request.method == 'DELETE':
+        user = request.user
+        try:
+            profile = models.UserProfile.objects.get(user=user)
+        except:
+            return JsonResponse({'detail':'User not Found'},status = status.HTTP_404_NOT_FOUND)
+        try:
+            if rating.user != profile:
+                return JsonResponse({'detail':'User is not the author of the rating'}, status = status.HTTP_400_BAD_REQUEST)
+            rating.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except:
+            response = JsonResponse({'detail':'User not Found'},status = status.HTTP_400_BAD_REQUEST)
+            return response
+
+
+
+class RemoveRating(generics.RetrieveDestroyAPIView):
+    serializer_class = serializers.RatingSerializer
+    permission_classes = (permissions.IsAuthenticated,)
+    queryset = models.IdeaRating.objects.all()
+    lookup_field = 'pk'
+    def perform_destroy(self, instance):
+        user = self.request.user
+        try:
+            profile = models.UserProfile.objects.get(user=user)
+            if instance.user != profile:
+                return JsonResponse({'error':'User is not the author of the rating'}, status = status.HTTP_400_BAD_REQUEST)
+            super().perform_destroy(instance)
+        except:
+            response = JsonResponse({'error':'User not Found'},status = status.HTTP_400_BAD_REQUEST)
+            print(response)
+            return response
+
+
+class GetIdea(generics.RetrieveAPIView):
+    serializer_class = serializers.IdeaSerializer
+    permission_classes = (permissions.IsAuthenticated,)
+    lookup_field = 'pk'
+    queryset = models.Idea.objects.all()
 
 class AllIdeas(generics.ListAPIView):
     serializer_class = serializers.IdeaSerializer
@@ -45,16 +131,28 @@ class AllIdeas(generics.ListAPIView):
 class AddIdea(generics.CreateAPIView):
     queryset = models.Idea.objects.all()
     serializer_class = serializers.IdeaSerializer
+    permission_classes = (permissions.IsAuthenticated,)
+
+class MyIdeas(generics.ListAPIView):
+    serializer_class = serializers.IdeaSerializer
+    permission_classes = (permissions.IsAuthenticated,)
+    def get_queryset(self):
+        try:
+            user = self.request.user
+            profile = models.UserProfile.objects.get(user=user)
+            queryset = models.Idea.objects.filter(creator = profile).order_by('-date_added')
+            return queryset
+        except:
+            raise Http404("User not found")
 
 class UserIdeas(generics.ListAPIView):
     serializer_class = serializers.IdeaSerializer
-    # permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = (permissions.IsAuthenticated,)
     def get_queryset(self):
         try:
-            pk = self.kwargs['pk']
-            user = User.objects.get(pk=pk)
+            user = User.objects.get(id=self.pk)
             profile = models.UserProfile.objects.get(user=user)
-            queryset = models.Idea.objects.filter(i_creator = profile).order_by('-i_date_added')
+            queryset = models.Idea.objects.filter(creator = profile).order_by('-date_added')
             return queryset
         except:
             raise Http404("User not found")
@@ -72,6 +170,8 @@ class UpdateIdea(generics.RetrieveUpdateAPIView):
 class UserList(generics.ListAPIView):
     serializer_class = serializers.UserSerializer
     queryset = User.objects.all()
+    permission_classes = (permissions.IsAdminUser,)
+
 
 class CategoryList(generics.ListAPIView):
     serializer_class = serializers.CategorySerializer
@@ -88,5 +188,17 @@ class RegisterUser(generics.CreateAPIView):
 
 class GetUser(generics.RetrieveAPIView):
     serializer_class = serializers.UserSerializer
+    permission_classes = (permissions.IsAdminUser,)
     queryset = User.objects.all()
     lookup_field = 'pk'
+
+class GetCurrentUser(generics.RetrieveAPIView):
+    serializer_class = serializers.UserSerializer
+    permission_classes = (permissions.IsAuthenticated,)
+    lookup_field = None
+    queryset = User.objects.all()
+    def get_object(self):
+        # queryset = self.get_queryset()
+        # obj = get_object_or_404(queryset, user=self.request.user)
+        # return obj
+        return self.request.user

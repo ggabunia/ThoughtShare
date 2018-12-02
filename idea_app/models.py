@@ -34,3 +34,27 @@ class Idea(models.Model):
     is_public = models.BooleanField(default=True)
     is_auction = models.BooleanField(default=False)
     auction_end = models.DateTimeField(blank = True, null = True)
+
+class IdeaRating(models.Model):
+    user = models.ForeignKey('UserProfile', on_delete=models.CASCADE, related_name='rate_giver')
+    idea = models.ForeignKey('Idea',on_delete=models.CASCADE, related_name='idea')
+    is_positive = models.BooleanField()
+    date_added = models.DateTimeField(auto_now_add = True)
+    def save(self, *args, **kwargs):
+        idea = Idea.objects.get(pk=self.idea.pk)
+        if self.is_positive:
+            idea.likes+=1
+        else:
+            idea.dislikes +=1
+        idea.save()
+
+        super(IdeaRating, self).save(*args, **kwargs)
+    def delete(self, *args, **kwargs):
+
+        idea = Idea.objects.get(pk=self.idea.pk)
+        if self.is_positive:
+            idea.likes -= 1
+        else:
+            idea.dislikes -= 1
+        idea.save()
+        super(IdeaRating, self).delete(*args, **kwargs)

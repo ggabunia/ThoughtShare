@@ -1,0 +1,15 @@
+<nav class="app-navigator">
+  <div class="app-navigator__logo-wrapper">
+    <a href="/">
+      <img class="app-navigator__logo-img" src="https://demo.joshoy.org/resource/idea-full_1f63e69d620d1130628106b2e7215258.png?d0db899746">
+    </a>
+  </div>
+  <ul class="app-navigator__menu">
+    <li class="app-navigator__menu-item"><a href="/features">Features</a></li>
+    <li class="app-navigator__menu-item"><a href="/help">Help</a></li>
+    <li class="app-navigator__menu-item"><a href="/contact">Contact</a></li>
+    <div class="app-navigator__divider-vertical" style="height: 1.6em;"></div>
+    <!-- User identity here -->
+    <li class="app-navigator__menu-item"><a href="/login">Login</a></li>
+  </ul>
+</nav>
