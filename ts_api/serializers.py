@@ -28,7 +28,10 @@ class RatingSerializer(serializers.Serializer):
         prev_rating = models.IdeaRating.objects.filter(user=profile, idea_id = idea_id)
         if len(prev_rating)>0:
             raise serializers.ValidationError("User has already rated this idea")
-        rating = models.IdeaRating.objects.create(user=profile, idea_id = idea_id, is_positive = is_positive)
+        try:
+            rating = models.IdeaRating.objects.create(user=profile, idea_id = idea_id, is_positive = is_positive)
+        except:
+            raise serializers.ValidationError("Idea not found")
         return rating
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -38,13 +41,10 @@ class CategorySerializer(serializers.ModelSerializer):
 
 
 
-class UserProfileSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.UserProfile
-        fields = ('phone','pk')
+
 
 class UserSerializer(serializers.ModelSerializer):
-    profile = UserProfileSerializer()
+
     password = serializers.CharField(
         write_only=True,
         required=True,
@@ -53,16 +53,21 @@ class UserSerializer(serializers.ModelSerializer):
     )
     class Meta:
         model = User
-        fields = ('id','username','email','password','first_name','last_name','profile')
-        # extra_kwargs = {'password': {'write_only': True,}}
+        fields = ('id','username','email','password','first_name','last_name')
+class UserProfileSerializer(serializers.ModelSerializer):
+    user = UserSerializer()
+    class Meta:
+        model = models.UserProfile
+        fields = ('phone','pk', 'user')
 
     def create(self, validated_data):
-        profile_data = validated_data.pop('profile')
-        user = User.objects.create(**validated_data)
-        user.set_password(validated_data['password'])
+        user_data = validated_data.pop('user')
+        password = user_data.pop('password')
+        user = User.objects.create(**user_data)
+        user.set_password(password)
         user.save()
-        models.UserProfile.objects.create(user=user, **profile_data)
-        return user
+        profile = models.UserProfile.objects.create(user=user, **validated_data)
+        return profile
 
 class IdeaSerializer(serializers.ModelSerializer):
     creator = UserProfileSerializer(read_only = True)

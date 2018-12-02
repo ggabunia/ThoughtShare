@@ -168,8 +168,8 @@ class UpdateIdea(generics.RetrieveUpdateAPIView):
 
 
 class UserList(generics.ListAPIView):
-    serializer_class = serializers.UserSerializer
-    queryset = User.objects.all()
+    serializer_class = serializers.UserProfileSerializer
+    queryset = models.UserProfile.objects.all()
     permission_classes = (permissions.IsAdminUser,)
 
 
@@ -183,8 +183,8 @@ class GetCategory(generics.RetrieveAPIView):
     lookup_field = 'pk'
 
 class RegisterUser(generics.CreateAPIView):
-    serializer_class = serializers.UserSerializer
-    queryset = User.objects.all()
+    serializer_class = serializers.UserProfileSerializer
+    queryset = models.UserProfile.objects.all()
 
 class GetUser(generics.RetrieveAPIView):
     serializer_class = serializers.UserSerializer
@@ -193,12 +193,9 @@ class GetUser(generics.RetrieveAPIView):
     lookup_field = 'pk'
 
 class GetCurrentUser(generics.RetrieveAPIView):
-    serializer_class = serializers.UserSerializer
+    serializer_class = serializers.UserProfileSerializer
     permission_classes = (permissions.IsAuthenticated,)
-    lookup_field = None
-    queryset = User.objects.all()
+    queryset = models.UserProfile.objects.all()
     def get_object(self):
-        # queryset = self.get_queryset()
-        # obj = get_object_or_404(queryset, user=self.request.user)
-        # return obj
-        return self.request.user
+        user = self.request.user
+        return get_object_or_404(models.UserProfile, user=user)
