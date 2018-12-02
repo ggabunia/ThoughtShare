@@ -30,5 +30,6 @@ urlpatterns = [
     path('get-user-rating/<int:idea_id>',views.get_user_rating, name = 'get_user_rating'),
     path('remove-rating/',views.delete_rating, name='remove_rating'),
     path('remove-rating/<int:idea_id>',views.delete_rating, name='remove_rating'),
+    path('search/',views.SearchIdeas.as_view(), name='search'),
 
 ]

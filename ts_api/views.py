@@ -1,5 +1,6 @@
 from django.shortcuts import render, get_object_or_404
 from django.http import Http404, JsonResponse
+from django.db.models import Q
 from rest_framework import mixins, generics, permissions, viewsets
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
@@ -7,9 +8,12 @@ from rest_framework.reverse import reverse
 from rest_framework.parsers import JSONParser
 from rest_framework import status
 from django.contrib.auth.models import User
+from decimal import *
+from datetime import datetime
 from . import serializers
 from idea_app import models
 import json
+import pytz
 # Create your views here.
 
 
@@ -30,7 +34,7 @@ def api_root(request, format=None):
         "user ideas": reverse('ts_api:user_ideas', request=request, format=format),
         "add idea (by authorized user)": reverse('ts_api:add_idea', request=request, format=format),
         "edit idea (of the authorized user)": reverse('ts_api:edit_idea', request=request, format=format),
-
+        "search": reverse('ts_api:search', request=request, format=format),
 
         "get all categories": reverse('ts_api:all_categories', request=request, format=format),
         "get category": reverse('ts_api:get_category', request=request, format=format),
@@ -199,3 +203,51 @@ class GetCurrentUser(generics.RetrieveAPIView):
     def get_object(self):
         user = self.request.user
         return get_object_or_404(models.UserProfile, user=user)
+
+class SearchIdeas(generics.ListAPIView):
+    serializer_class = serializers.IdeaSerializer
+
+    def get_queryset(self):
+        queryset = models.Idea.objects.all()
+        format = "%Y-%m-%d"
+        utc=pytz.UTC
+        price_lowest = None
+        price_highest = None
+        date_start = None
+        date_end = None
+        min_rating = None
+        search_text = self.request.query_params.get('search_text', None)
+        try:
+            price_lowest = Decimal(self.request.query_params.get('price_lowest', None))
+        except:
+            price_lowest = None
+        try:
+            price_highest = Decimal(self.request.query_params.get('price_highest', None))
+        except:
+            price_highest = None
+        try:
+            min_rating = int(self.request.query_params.get('min_rating', None))
+        except:
+            min_rating = None
+        try:
+            date_start = utc.localize(datetime.strptime(self.request.query_params.get('date_start', None), format))
+        except Exception as ex:
+            date_start = None
+        try:
+            date_end = utc.localize(datetime.strptime(self.request.query_params.get('date_end', None), format))
+        except:
+            date_end = None
+        if search_text:
+            queryset = queryset.filter(Q(title__icontains=search_text)|Q(description__icontains=search_text))
+        if price_lowest:
+            queryset = queryset.filter(price__gte=price_lowest)
+        if price_highest:
+            queryset = queryset.filter(price__lte=price_highest)
+        if date_start:
+            queryset = queryset.filter(date_added__gte=date_start)
+        if date_end:
+            queryset = queryset.filter(date_added__lte=date_end)
+        if min_rating:
+            objects_ids = [obj.id for obj in list(queryset) if obj.likes-obj.dislikes >= min_rating]
+            queryset = queryset.filter(id__in=objects_ids)
+        return queryset

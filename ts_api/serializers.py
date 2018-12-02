@@ -121,3 +121,16 @@ class IdeaSerializer(serializers.ModelSerializer):
             instance.auction_end = None
         instance.save()
         return instance
+
+class IdeaSearchSerializer(serializers.ModelSerializer):
+    # creator = UserProfileSerializer(read_only = True)
+    # search_text = serializers.CharField(write_only = True, required=False)
+    # date_start = serializers.DateTimeField(write_only = True,required=False)
+    # date_end = serializers.DateTimeField(write_only = True,required=False)
+    # price_lowest = serializers.DecimalField(write_only = True,required=False)
+    # price_highest = serializers.DecimalField(write_only = True,required=False)
+    # min_rating = serializers.IntegerField(write_only = True,required=False)
+    class Meta:
+        model = models.Idea
+        fields = ('id','date_added','title','description','content','price','is_public','is_auction','auction_end','likes','dislikes', 'date_sold', 'category_id')
+        read_only_fields = ('id','date_added','title','description','content','price','is_public','is_auction','auction_end','likes','dislikes', 'date_sold','category_id')
