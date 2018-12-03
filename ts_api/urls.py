@@ -9,6 +9,7 @@ urlpatterns = [
     path('', views.api_root),
     path('rest-auth/', include('rest_auth.urls'), name='rest_auth'),
     path('login/',views.CustomLoginView.as_view(), name='login'),
+    path('logout/',views.CustomLogoutView.as_view(), name='logout'),
     path('all-ideas/',views.AllIdeas.as_view(), name = 'all_ideas'),
     path('my-ideas/',views.MyIdeas.as_view(), name = 'my_ideas'),
     path('user-ideas/>',views.UserIdeas.as_view(), name = 'user_ideas'),

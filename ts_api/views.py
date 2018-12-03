@@ -2,12 +2,12 @@ from django.shortcuts import render, get_object_or_404
 from django.http import Http404, JsonResponse
 from django.db.models import Q
 from rest_framework import mixins, generics, permissions, viewsets
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
 from rest_framework.parsers import JSONParser
 from rest_framework import status
-from rest_auth.views import LoginView
+from rest_auth.views import LoginView, LogoutView
 from django.contrib.auth.models import User
 from decimal import *
 from datetime import datetime
@@ -27,8 +27,9 @@ class CsrfExemptSessionAuthentication(SessionAuthentication):
 @api_view(['GET'])
 def api_root(request, format=None):
     return Response({
-        "login (using built-in functions)": request.build_absolute_uri()+"rest-auth/login",
-        "login (without csrf - test)": reverse('ts_api:login', request=request, format=format),
+        # "login (using built-in functions)": request.build_absolute_uri()+"rest-auth/login",
+        "login": reverse('ts_api:login', request=request, format=format),
+        "logout": reverse('ts_api:logout', request=request, format=format),
         "logout": request.build_absolute_uri()+"rest-auth/logout",
         "register user" : reverse('ts_api:register', request=request, format=format),
         "get current user" :reverse('ts_api:get_current_user', request=request, format=format),
@@ -56,13 +57,17 @@ def api_root(request, format=None):
 class CustomLoginView(LoginView):
     authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
 
+class CustomLogoutView(LogoutView):
+    authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
 
 class AddRating(generics.CreateAPIView):
+    authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
     queryset = models.IdeaRating.objects.all()
     serializer_class = serializers.RatingSerializer
     permission_classes = (permissions.IsAuthenticated,)
 
 @api_view(['GET'])
+@authentication_classes((CsrfExemptSessionAuthentication, BasicAuthentication))
 @permission_classes((permissions.IsAuthenticated, ))
 def get_user_rating(request, idea_id):
     user = request.user
@@ -80,6 +85,7 @@ def get_user_rating(request, idea_id):
     return Response(rating.data)
 
 @api_view(['GET','DELETE'])
+@authentication_classes((CsrfExemptSessionAuthentication, BasicAuthentication))
 @permission_classes((permissions.IsAuthenticated, ))
 def delete_rating(request,idea_id):
     try:
@@ -109,6 +115,7 @@ def delete_rating(request,idea_id):
 
 
 class RemoveRating(generics.RetrieveDestroyAPIView):
+    authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
     serializer_class = serializers.RatingSerializer
     permission_classes = (permissions.IsAuthenticated,)
     queryset = models.IdeaRating.objects.all()
@@ -136,7 +143,7 @@ class GetIdea(generics.RetrieveAPIView):
 class AllIdeas(generics.ListAPIView):
     serializer_class = serializers.IdeaSerializer
     # permission_classes = (permissions.IsAuthenticated,)
-
+    authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
     def get_queryset(self):
         try:
             queryset = models.Idea.objects.all().order_by('-date_added')
@@ -145,11 +152,13 @@ class AllIdeas(generics.ListAPIView):
             raise Http404("Ideas not Found")
 
 class AddIdea(generics.CreateAPIView):
+    authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
     queryset = models.Idea.objects.all()
     serializer_class = serializers.IdeaSerializer
     permission_classes = (permissions.IsAuthenticated,)
 
 class MyIdeas(generics.ListAPIView):
+    authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
     serializer_class = serializers.IdeaSerializer
     permission_classes = (permissions.IsAuthenticated,)
     def get_queryset(self):
@@ -162,6 +171,7 @@ class MyIdeas(generics.ListAPIView):
             raise Http404("User not found")
 
 class UserIdeas(generics.ListAPIView):
+    authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
     serializer_class = serializers.IdeaSerializer
     permission_classes = (permissions.IsAuthenticated,)
     def get_queryset(self):
@@ -174,6 +184,7 @@ class UserIdeas(generics.ListAPIView):
             raise Http404("User not found")
 
 class UpdateIdea(generics.RetrieveUpdateAPIView):
+    authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
     permission_classes = (permissions.IsAuthenticated,)
     serializer_class = serializers.IdeaSerializer
     lookup_field = 'pk'
@@ -184,31 +195,37 @@ class UpdateIdea(generics.RetrieveUpdateAPIView):
 
 
 class UserList(generics.ListAPIView):
+    authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
     serializer_class = serializers.UserSerializer
     queryset = User.objects.all()
     permission_classes = (permissions.IsAuthenticated,)
 
 
 class CategoryList(generics.ListAPIView):
+    authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
     serializer_class = serializers.CategorySerializer
     queryset = models.Category.objects.all().order_by('priority')
 
 class GetCategory(generics.RetrieveAPIView):
+    authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
     serializer_class = serializers.CategorySerializer
     queryset = models.Category.objects.all().order_by('priority')
     lookup_field = 'pk'
 
 class RegisterUser(generics.CreateAPIView):
+    authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
     serializer_class = serializers.UserProfileSerializer
     queryset = models.UserProfile.objects.all()
 
 class GetUser(generics.RetrieveAPIView):
+    authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
     serializer_class = serializers.UserSerializer
     permission_classes = (permissions.IsAuthenticated,)
     queryset = User.objects.all()
     lookup_field = 'pk'
 
 class GetCurrentUser(generics.RetrieveAPIView):
+    authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
     serializer_class = serializers.UserProfileSerializer
     permission_classes = (permissions.IsAuthenticated,)
     queryset = models.UserProfile.objects.all()
@@ -217,6 +234,7 @@ class GetCurrentUser(generics.RetrieveAPIView):
         return get_object_or_404(models.UserProfile, user=user)
 
 class SearchIdeas(generics.ListAPIView):
+    authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
     serializer_class = serializers.IdeaSerializer
 
     def get_queryset(self):
