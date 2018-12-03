@@ -7,6 +7,7 @@ from rest_framework.response import Response
 from rest_framework.reverse import reverse
 from rest_framework.parsers import JSONParser
 from rest_framework import status
+from rest_auth.views import LoginView
 from django.contrib.auth.models import User
 from decimal import *
 from datetime import datetime
@@ -26,7 +27,8 @@ class CsrfExemptSessionAuthentication(SessionAuthentication):
 @api_view(['GET'])
 def api_root(request, format=None):
     return Response({
-        "login": request.build_absolute_uri()+"rest-auth/login",
+        "login (using built-in functions)": request.build_absolute_uri()+"rest-auth/login",
+        "login (without csrf - test)": reverse('ts_api:login', request=request, format=format),
         "logout": request.build_absolute_uri()+"rest-auth/logout",
         "register user" : reverse('ts_api:register', request=request, format=format),
         "get current user" :reverse('ts_api:get_current_user', request=request, format=format),
@@ -50,6 +52,9 @@ def api_root(request, format=None):
         "remove current rating for an idea": reverse('ts_api:remove_rating', request=request, format=format),
 
     })
+
+class CustomLoginView(LoginView):
+    authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
 
 
 class AddRating(generics.CreateAPIView):
