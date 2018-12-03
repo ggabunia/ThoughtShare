@@ -14,7 +14,13 @@ from . import serializers
 from idea_app import models
 import json
 import pytz
-# Create your views here.
+
+from rest_framework.authentication import SessionAuthentication, BasicAuthentication
+
+class CsrfExemptSessionAuthentication(SessionAuthentication):
+
+    def enforce_csrf(self, request):
+        return  # To not perform the csrf check previously happening
 
 
 @api_view(['GET'])
@@ -25,8 +31,8 @@ def api_root(request, format=None):
         "register user" : reverse('ts_api:register', request=request, format=format),
         "get current user" :reverse('ts_api:get_current_user', request=request, format=format),
 
-        "get single user (admin only)" : reverse('ts_api:get_user', request=request, format=format),
-        "all users (admin only)" : reverse('ts_api:user_list', request=request, format=format),
+        "get single user" : reverse('ts_api:get_user', request=request, format=format),
+        "all users" : reverse('ts_api:user_list', request=request, format=format),
 
         "all ideas": reverse('ts_api:all_ideas', request=request, format=format),
         "get idea": reverse('ts_api:get_idea', request=request, format=format),
@@ -117,6 +123,7 @@ class RemoveRating(generics.RetrieveDestroyAPIView):
 
 class GetIdea(generics.RetrieveAPIView):
     serializer_class = serializers.IdeaSerializer
+    authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
     permission_classes = (permissions.IsAuthenticated,)
     lookup_field = 'pk'
     queryset = models.Idea.objects.all()
@@ -192,7 +199,7 @@ class RegisterUser(generics.CreateAPIView):
 
 class GetUser(generics.RetrieveAPIView):
     serializer_class = serializers.UserSerializer
-    permission_classes = (permissions.IsAdminUser,)
+    permission_classes = (permissions.IsAuthenticated,)
     queryset = User.objects.all()
     lookup_field = 'pk'
 
